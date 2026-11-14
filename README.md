@@ -131,6 +131,44 @@ doc, err := goquery.NewDocumentFromReaderWithOptions(r,
 
 Here, `html` is the `golang.org/x/net/html` package.
 
+### Reading form control values
+
+`Selection.Val` reads the current value of the first form control in the
+selection, from the markup as parsed (the `value` attribute, the `selected`
+and `checked` flags, and the text contents of `textarea` and `option`
+elements). It returns `(value any, ok bool)`; `ok` is false for an empty
+selection or a non-form element such as a `div` or a `button` element.
+
+The concrete type of `value` follows the control's form:
+
+* text-like inputs, `textarea` and single `select`: a `string`. A single
+  `select` with no `selected` option yields the first non-disabled option's
+  value, the same value a browser submits.
+* radio groups: a `string` for the checked input, or `nil` when nothing is
+  checked. A checked input without a `value` attribute yields the browser
+  default `"on"`.
+* checkboxes and `select multiple`: a `[]string`, always non-nil, holding
+  every checked/selected value in document order; an empty slice means
+  nothing is selected.
+
+The multi-value controls return `[]string` rather than a joined string or a
+jQuery-style `any`: a joined string would collide with legitimate values that
+contain the separator and force every caller to re-split, while a typed
+slice lets callers range over the values directly and keeps the empty state
+(`[]string{}`) distinct from "not a form control" (`nil`, `ok == false`).
+Checkboxes share this shape with `select multiple` because both submit a
+set of named values with the same cardinality semantics.
+
+```Go
+doc, _ := goquery.NewDocumentFromReader(strings.NewReader(pageHTML))
+
+v, ok := doc.Find("input[name=email]").Val()
+email := v.(string)
+
+vs, ok := doc.Find("select[multiple]").Val()
+tags := vs.([]string)
+```
+
 ## Examples
 
 See some tips and tricks in the [wiki][].

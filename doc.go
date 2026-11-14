@@ -70,6 +70,9 @@ The three dots (...) indicate that various "overloads" are available.
     - Intersection(), which is an alias of FilterSelection()
     - Not...()
 
+* form.go : read the current value of form controls.
+    - Val()
+
 * iteration.go : methods to loop over the selection's nodes.
     - Each()
     - EachWithBreak()
